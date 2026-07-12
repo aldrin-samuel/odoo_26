@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>TransitOps</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🚚 TransitOps</h1>
+
+    <div class="card">
+        <h2>Dashboard</h2>
+        <h3>Total Vehicles : <span id="vehicleCount">0</span></h3>
+    </div>
+
+    <div class="card">
+
+        <h2>Add Vehicle</h2>
+
+        <input type="text" id="regNo" placeholder="Registration Number">
+
+        <input type="text" id="vehicleName" placeholder="Vehicle Name">
+
+        <input type="text" id="vehicleType" placeholder="Vehicle Type">
+
+        <input type="number" id="capacity" placeholder="Capacity">
+
+        <button onclick="addVehicle()">
+            Save Vehicle
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Vehicle List</h2>
+
+        <table>
+
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Registration</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+
+            <tbody id="vehicleTable">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script th:src="@{/script.js}"></script>
+
+</body>
+</html>
