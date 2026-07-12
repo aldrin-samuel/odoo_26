@@ -1,27 +1,43 @@
 package com.transitops.controller;
 
-import com.transitops.service.VehicleService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.transitops.repository.DriverRepository;
+import com.transitops.repository.TripRepository;
+import com.transitops.repository.VehicleRepository;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api/dashboard")
+@CrossOrigin("*")
 public class DashboardController {
 
-    private final VehicleService vehicleService;
+    private final VehicleRepository vehicleRepository;
+    private final DriverRepository driverRepository;
+    private final TripRepository tripRepository;
 
-    public DashboardController(VehicleService vehicleService) {
-        this.vehicleService = vehicleService;
+    public DashboardController(VehicleRepository vehicleRepository,
+                               DriverRepository driverRepository,
+                               TripRepository tripRepository) {
+
+        this.vehicleRepository = vehicleRepository;
+        this.driverRepository = driverRepository;
+        this.tripRepository = tripRepository;
     }
 
-    @GetMapping("/api/dashboard")
-    public Map<String, Long> dashboard() {
+    @GetMapping
+    public Map<String, Long> getDashboard() {
 
-        return Map.of(
-                "totalVehicles",
-                vehicleService.countVehicles()
-        );
+        Map<String, Long> dashboard = new HashMap<>();
+
+        dashboard.put("totalVehicles", vehicleRepository.count());
+
+        dashboard.put("totalDrivers", driverRepository.count());
+
+        dashboard.put("totalTrips", tripRepository.count());
+
+        return dashboard;
 
     }
 

@@ -1,58 +1,210 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
+
     <meta charset="UTF-8">
     <title>TransitOps</title>
 
     <link rel="stylesheet" th:href="@{/style.css}">
+
 </head>
+
 <body>
 
 <div class="container">
 
-    <h1>🚚 TransitOps</h1>
+    <h1>🚚 TransitOps Fleet Management</h1>
+
+    <!-- ================= Dashboard ================= -->
 
     <div class="card">
+
         <h2>Dashboard</h2>
-        <h3>Total Vehicles : <span id="vehicleCount">0</span></h3>
+
+        <div class="stats">
+
+            <div>
+                <h3>Vehicles</h3>
+                <h2 id="vehicleCount">0</h2>
+            </div>
+
+            <div>
+                <h3>Drivers</h3>
+                <h2 id="driverCount">0</h2>
+            </div>
+
+            <div>
+                <h3>Trips</h3>
+                <h2 id="tripCount">0</h2>
+            </div>
+
+        </div>
+
     </div>
+
+    <!-- ================= Forms ================= -->
+
+    <div class="forms">
+
+        <!-- Vehicle -->
+
+        <div class="card">
+
+            <h2>Add Vehicle</h2>
+
+            <input id="regNo" placeholder="Registration Number">
+
+            <input id="vehicleName" placeholder="Vehicle Name">
+
+            <input id="vehicleType" placeholder="Vehicle Type">
+
+            <input id="capacity" type="number" placeholder="Capacity">
+
+            <button onclick="addVehicle()">
+                Save Vehicle
+            </button>
+
+        </div>
+
+        <!-- Driver -->
+
+        <div class="card">
+
+            <h2>Add Driver</h2>
+
+            <input id="driverName" placeholder="Driver Name">
+
+            <input id="licenseNumber" placeholder="License Number">
+
+            <input id="licenseCategory" placeholder="License Category">
+
+            <input id="licenseExpiry" type="date">
+
+            <input id="contactNumber" placeholder="Contact Number">
+
+            <button onclick="addDriver()">
+                Save Driver
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ================= Vehicle Table ================= -->
 
     <div class="card">
 
-        <h2>Add Vehicle</h2>
-
-        <input type="text" id="regNo" placeholder="Registration Number">
-
-        <input type="text" id="vehicleName" placeholder="Vehicle Name">
-
-        <input type="text" id="vehicleType" placeholder="Vehicle Type">
-
-        <input type="number" id="capacity" placeholder="Capacity">
-
-        <button onclick="addVehicle()">
-            Save Vehicle
-        </button>
-
-    </div>
-
-    <div class="card">
-
-        <h2>Vehicle List</h2>
+        <h2>Vehicles</h2>
 
         <table>
 
             <thead>
+
             <tr>
+
                 <th>ID</th>
                 <th>Registration</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
                 <th>Action</th>
+
             </tr>
+
             </thead>
 
             <tbody id="vehicleTable">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- ================= Driver Table ================= -->
+
+    <div class="card">
+
+        <h2>Drivers</h2>
+
+        <table>
+
+            <thead>
+
+            <tr>
+
+                <th>ID</th>
+                <th>Name</th>
+                <th>License</th>
+                <th>Status</th>
+                <th>Action</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody id="driverTable">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- ================= Dispatch Trip ================= -->
+
+    <div class="card">
+
+        <h2>Dispatch Trip</h2>
+
+        <select id="tripVehicle"></select>
+
+        <select id="tripDriver"></select>
+
+        <input id="tripSource" placeholder="Source">
+
+        <input id="tripDestination" placeholder="Destination">
+
+        <input id="tripCargo" placeholder="Cargo">
+
+        <input id="tripDistance" type="number" placeholder="Distance">
+
+        <input id="tripRevenue" type="number" placeholder="Revenue">
+
+        <button onclick="createTrip()">
+
+            Dispatch Trip
+
+        </button>
+
+    </div>
+
+    <!-- ================= Trip Table ================= -->
+
+    <div class="card">
+
+        <h2>Trips</h2>
+
+        <table>
+
+            <thead>
+
+            <tr>
+
+                <th>ID</th>
+                <th>Vehicle</th>
+                <th>Driver</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>Revenue</th>
+                <th>Action</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody id="tripTable">
 
             </tbody>
 
@@ -65,4 +217,5 @@
 <script th:src="@{/script.js}"></script>
 
 </body>
+
 </html>
