@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>TransitOps</title>
+    <title>TransitOps Dashboard</title>
     <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 
@@ -11,7 +11,7 @@
 
 <div class="container">
 
-    <!-- ================= Top Bar with RBAC Info ================= -->
+    <!-- ================= Top Bar ================= -->
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px;">
         <h1 style="margin:0; border:none; padding:0; font-size: 2.2rem;">🚚 TransitOps Fleet Management</h1>
         <div style="display: flex; align-items: center;">
@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <!-- ================= Dashboard (Visible to Everyone) ================= -->
+    <!-- ================= Dashboard (Everyone sees this) ================= -->
     <div class="card">
         <h2>Dashboard</h2>
         <div class="stats">
@@ -34,7 +34,7 @@
     <!-- ================= Forms ================= -->
     <div class="forms">
 
-        <!-- Vehicle: FLEET ONLY -->
+        <!-- Vehicle Form: FLEET ONLY -->
         <div class="card rbac-fleet">
             <h2>Add Vehicle</h2>
             <input id="regNo" placeholder="Registration Number">
@@ -45,7 +45,7 @@
             <button onclick="addVehicle()">Save Vehicle</button>
         </div>
 
-        <!-- Driver: SAFETY OFFICER ONLY -->
+        <!-- Driver Form: SAFETY OFFICER ONLY -->
         <div class="card rbac-safety">
             <h2>Add Driver</h2>
             <input id="driverName" placeholder="Driver Name">
@@ -56,7 +56,7 @@
             <button onclick="addDriver()">Save Driver</button>
         </div>
 
-        <!-- Dispatch Trip: DRIVER ONLY -->
+        <!-- Dispatch Trip Form: DRIVER ONLY -->
         <div class="card rbac-driver">
             <h2>Dispatch Trip</h2>
             <select id="tripVehicle"></select>
@@ -68,7 +68,7 @@
             <button onclick="createTrip()">Dispatch Trip</button>
         </div>
 
-        <!-- Complete Trip: DRIVER ONLY -->
+        <!-- Complete Trip Form: DRIVER ONLY -->
         <div class="card rbac-driver" id="completeTripCard" style="display:none; border: 2px solid #10b981;">
             <h2>Complete Trip #<span id="ctTripId"></span></h2>
             <input id="ctActualDistance" type="number" placeholder="Actual Distance (km)">
@@ -78,7 +78,7 @@
             <button onclick="cancelCompleteForm()" style="background:#64748b;">Cancel</button>
         </div>
 
-        <!-- Maintenance: FLEET ONLY -->
+        <!-- Maintenance Form: FLEET ONLY -->
         <div class="card rbac-fleet">
             <h2>Add Maintenance Log</h2>
             <select id="maintVehicle"></select>
@@ -88,7 +88,7 @@
             <button onclick="addMaintenance()">Save Log</button>
         </div>
 
-        <!-- Fuel: FINANCE ONLY -->
+        <!-- Fuel Form: FINANCE ONLY -->
         <div class="card rbac-finance">
             <h2>Add Fuel Log</h2>
             <select id="fuelVehicle"></select>
@@ -99,7 +99,7 @@
             <button onclick="addFuelLog()">Save Fuel Log</button>
         </div>
 
-        <!-- Expense: FINANCE ONLY -->
+        <!-- Expense Form: FINANCE ONLY -->
         <div class="card rbac-finance">
             <h2>Add Expense</h2>
             <select id="expVehicle"><option value="">-- None --</option></select>
@@ -114,55 +114,69 @@
 
     <!-- ================= Tables ================= -->
 
-    <!-- Vehicles Table: Fleet (Manage), Finance (Read), Safety (Read), Driver (Read for dropdowns) -->
+    <!-- Vehicles Table: FLEET (Manage), FINANCE/SAFETY/DRIVER (Read-only) -->
     <div class="card rbac-fleet rbac-readonly-finance rbac-readonly-safety rbac-readonly-driver">
         <h2>Vehicles</h2>
-        <table><thead><tr><th>ID</th><th>Registration</th><th>Name</th><th>Type</th><th>Capacity</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="vehicleTable"></tbody></table>
+        <table>
+            <thead><tr><th>ID</th><th>Registration</th><th>Name</th><th>Type</th><th>Capacity</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="vehicleTable"></tbody>
+        </table>
     </div>
 
-    <!-- Drivers Table: Safety (Manage), Fleet (Manage), Driver (Read for dropdowns) -->
+    <!-- Drivers Table: SAFETY (Manage), FLEET/DRIVER (Read-only) -->
     <div class="card rbac-safety rbac-fleet rbac-driver">
         <h2>Drivers</h2>
-        <table><thead><tr><th>ID</th><th>Name</th><th>License</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="driverTable"></tbody></table>
+        <table>
+            <thead><tr><th>ID</th><th>Name</th><th>License</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="driverTable"></tbody>
+        </table>
     </div>
 
-    <!-- Trips Table: Driver (Manage), Fleet (Read), Safety (Read-only) -->
+    <!-- Trips Table: DRIVER (Manage), FLEET/SAFETY (Read-only) -->
     <div class="card rbac-driver rbac-fleet rbac-safety">
         <h2>Trips</h2>
-        <table><thead><tr><th>ID</th><th>Vehicle</th><th>Driver</th><th>Route</th><th>Cargo</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="tripTable"></tbody></table>
+        <table>
+            <thead><tr><th>ID</th><th>Vehicle</th><th>Driver</th><th>Route</th><th>Cargo</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="tripTable"></tbody>
+        </table>
     </div>
 
     <!-- Maintenance Table: FLEET ONLY -->
     <div class="card rbac-fleet">
         <h2>Maintenance Logs</h2>
-        <table><thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Desc</th><th>Cost</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="maintTable"></tbody></table>
+        <table>
+            <thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Desc</th><th>Cost</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="maintTable"></tbody>
+        </table>
     </div>
 
     <!-- Fuel Table: FINANCE ONLY -->
     <div class="card rbac-finance">
         <h2>Fuel Logs</h2>
-        <table><thead><tr><th>ID</th><th>Vehicle</th><th>Liters</th><th>Total Cost</th><th>Date</th></tr></thead>
-            <tbody id="fuelTable"></tbody></table>
+        <table>
+            <thead><tr><th>ID</th><th>Vehicle</th><th>Liters</th><th>Total Cost</th><th>Date</th></tr></thead>
+            <tbody id="fuelTable"></tbody>
+        </table>
     </div>
 
     <!-- Expenses Table: FINANCE ONLY -->
     <div class="card rbac-finance">
         <h2>Expenses</h2>
-        <table><thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Description</th><th>Amount</th></tr></thead>
-            <tbody id="expTable"></tbody></table>
+        <table>
+            <thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Description</th><th>Amount</th></tr></thead>
+            <tbody id="expTable"></tbody>
+        </table>
     </div>
 
     <!-- ================= Analytics ================= -->
-    <!-- Analytics Table: Finance (Manage), Fleet (View operational efficiency) -->
+    <!-- Analytics Table: FINANCE (Manage), FLEET (Read-only) -->
     <div class="card rbac-finance rbac-fleet">
         <h2>Fleet Analytics & Reports</h2>
         <button onclick="exportCsv()" style="margin-bottom: 15px; background: #2563eb; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">⬇ Export CSV</button>
-        <table><thead><tr><th>Vehicle</th><th>Total Fuel Cost</th><th>Total Maint Cost</th><th>Op. Cost</th><th>Fuel Eff. (km/L)</th><th>ROI (%)</th></tr></thead>
-            <tbody id="analyticsTable"></tbody></table>
+        <table>
+            <thead><tr><th>Vehicle</th><th>Total Fuel Cost</th><th>Total Maint Cost</th><th>Op. Cost</th><th>Fuel Eff. (km/L)</th><th>ROI (%)</th></tr></thead>
+            <tbody id="analyticsTable"></tbody>
+        </table>
     </div>
 
 </div>
