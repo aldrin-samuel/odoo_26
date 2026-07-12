@@ -10,7 +10,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:transitops.hackathon@gmail.com}") // Added a fallback just in case
     private String fromEmail;
 
     public EmailService(JavaMailSender mailSender) {
@@ -41,15 +41,22 @@ public class EmailService {
 
     private void sendEmail(String to, String subject, String body) {
         try {
+            System.out.println("Attempting to send email...");
+            System.out.println("From: " + fromEmail);
+            System.out.println("To: " + to);
+
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);
+
             mailSender.send(message);
-            System.out.println("Email sent successfully to: " + to);
+            System.out.println("✅ Email sent successfully to: " + to);
         } catch (Exception e) {
-            System.err.println("Failed to send email to " + to + ": " + e.getMessage());
+            System.err.println("❌ Failed to send email to " + to);
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
