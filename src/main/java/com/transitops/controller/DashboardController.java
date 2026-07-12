@@ -1,44 +1,22 @@
+// controller/DashboardController.java
 package com.transitops.controller;
 
-import com.transitops.repository.DriverRepository;
-import com.transitops.repository.TripRepository;
-import com.transitops.repository.VehicleRepository;
+import com.transitops.dto.DashboardResponse;
+import com.transitops.service.DashboardService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/dashboard")
-@CrossOrigin("*")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class DashboardController {
 
-    private final VehicleRepository vehicleRepository;
-    private final DriverRepository driverRepository;
-    private final TripRepository tripRepository;
-
-    public DashboardController(VehicleRepository vehicleRepository,
-                               DriverRepository driverRepository,
-                               TripRepository tripRepository) {
-
-        this.vehicleRepository = vehicleRepository;
-        this.driverRepository = driverRepository;
-        this.tripRepository = tripRepository;
-    }
+    private final DashboardService dashboardService;
 
     @GetMapping
-    public Map<String, Long> getDashboard() {
-
-        Map<String, Long> dashboard = new HashMap<>();
-
-        dashboard.put("totalVehicles", vehicleRepository.count());
-
-        dashboard.put("totalDrivers", driverRepository.count());
-
-        dashboard.put("totalTrips", tripRepository.count());
-
-        return dashboard;
-
+    public ResponseEntity<DashboardResponse> getDashboardStats() {
+        return ResponseEntity.ok(dashboardService.getDashboardStats());
     }
-
 }
