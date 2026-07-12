@@ -5,6 +5,7 @@ import com.transitops.entity.User;
 import com.transitops.entity.enums.DriverStatus;
 import com.transitops.repository.DriverRepository;
 import com.transitops.repository.UserRepository;
+import com.transitops.service.EmailService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @SpringBootApplication
 public class TransitopsApplication {
@@ -32,15 +32,28 @@ public class TransitopsApplication {
         };
     }
 
-    // FEATURE 4: Auto-suspend drivers with expired licenses
     @Bean
-    public CommandLineRunner suspendExpiredDrivers(DriverRepository driverRepository) {
+    public CommandLineRunner checkDriverCompliance(DriverRepository driverRepository, EmailService emailService) {
         return args -> {
-            List<Driver> expiredDrivers = driverRepository.findExpiredActiveDrivers(LocalDate.now());
-            if (!expiredDrivers.isEmpty()) {
-                expiredDrivers.forEach(d -> d.setStatus(DriverStatus.SUSPENDED));
-                driverRepository.saveAll(expiredDrivers);
-                System.out.println("Auto-suspended " + expiredDrivers.size() + " drivers with expired licenses.");
+            LocalDate today = LocalDate.now();
+            LocalDate warningThreshold = today.plusDays(30); // 30 days warning
+
+            List<Driver> allDrivers = driverRepository.findAll();
+
+            for (Driver d : allDrivers) {
+                if (d.getLicenseExpiry() != null) {
+                    // 1. Auto-suspend if expired
+                    if (d.getLicenseExpiry().isBefore(today) && d.getStatus() != DriverStatus.SUSPENDED) {
+                        d.setStatus(DriverStatus.SUSPENDED);
+                        driverRepository.save(d);
+                        emailService.sendSuspensionEmail(d.getEmail(), d.getName());
+                    }
+                    // 2. Send warning email if expiring within 30 days
+                    else if (d.getLicenseExpiry().isBefore(warningThreshold) && d.getLicenseExpiry().isAfter(today) && d.getStatus() != DriverStatus.SUSPENDED) {
+                        System.out.println("Sending 30-day expiry warning to " + d.getName());
+                        emailService.sendLicenseExpiryEmail(d.getEmail(), d.getName(), d.getLicenseExpiry().toString());
+                    }
+                }
             }
         };
     }

@@ -30,6 +30,9 @@ public class Driver extends BaseEntity {
     @Column(nullable = false)
     private String contactNumber;
 
+    @Column(nullable = false)
+    private String email;
+
     private Double safetyScore = 100.0;
 
     @Enumerated(EnumType.STRING)

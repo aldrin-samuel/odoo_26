@@ -60,6 +60,26 @@ public class DriverController {
         }
     }
 
+    @PutMapping("/{id}/off-duty")
+    public ResponseEntity<?> setOffDuty(@PathVariable Long id) {
+        try {
+            driverService.setOffDuty(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/available")
+    public ResponseEntity<?> setAvailable(@PathVariable Long id) {
+        try {
+            driverService.setAvailable(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/{id}/reactivate")
     public ResponseEntity<?> reactivateDriver(@PathVariable Long id) {
         try {
