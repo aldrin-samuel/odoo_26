@@ -11,14 +11,9 @@ import java.util.List;
 public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     boolean existsByLicenseNumber(String licenseNumber);
-
-    // Required for Dashboard Service
     long countByStatus(DriverStatus status);
-
-    // Required for Trip Dispatch - get only available drivers
     List<Driver> findByStatus(DriverStatus status);
 
-    // Business Rule: Drivers with expired licenses cannot be assigned
-    @Query("SELECT d FROM Driver d WHERE d.licenseExpiry > :currentDate AND d.status = 'AVAILABLE'")
-    List<Driver> findAvailableDriversWithValidLicense(LocalDate currentDate);
+    @Query("SELECT d FROM Driver d WHERE d.licenseExpiry < :currentDate AND d.status <> 'SUSPENDED'")
+    List<Driver> findExpiredActiveDrivers(LocalDate currentDate);
 }

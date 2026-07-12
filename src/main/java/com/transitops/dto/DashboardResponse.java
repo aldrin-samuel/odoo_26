@@ -1,4 +1,3 @@
-// dto/DashboardResponse.java
 package com.transitops.dto;
 
 import lombok.Builder;
@@ -21,6 +20,10 @@ public class DashboardResponse {
     private List<VehicleStatusCount> vehicleStatusCounts;
     private List<TripStatusCount> tripStatusCounts;
 
+    // --- ADD THESE TWO NEW FIELDS ---
+    private List<ActiveTripDto> activeTripsList;
+    private List<String> notifications;
+
     @Data
     @Builder
     public static class VehicleStatusCount {
@@ -33,5 +36,15 @@ public class DashboardResponse {
     public static class TripStatusCount {
         private String status;
         private long count;
+    }
+
+    // --- ADD THIS INNER CLASS ---
+    @Data
+    @Builder
+    public static class ActiveTripDto {
+        private String tripNumber;
+        private String vehicleReg;
+        private String driverName;
+        private String route;
     }
 }

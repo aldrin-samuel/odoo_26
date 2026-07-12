@@ -21,4 +21,5 @@ public class FuelLogResponse {
     private LocalDate date;
     private BigDecimal odometerReading;
     private String fuelStation;
+    private String driverName;
 }

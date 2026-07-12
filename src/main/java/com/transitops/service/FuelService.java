@@ -68,10 +68,11 @@ public class FuelService {
         return FuelLogResponse.builder()
                 .id(log.getId())
                 .vehicleId(log.getVehicle().getId())
-                .vehicleName(log.getVehicle().getVehicleName())  // CORRECT METHOD
+                .vehicleName(log.getVehicle().getVehicleName())
                 .registrationNumber(log.getVehicle().getRegistrationNumber())
                 .tripId(log.getTrip() != null ? log.getTrip().getId() : null)
                 .tripNumber(log.getTrip() != null ? log.getTrip().getTripNumber() : null)
+                .driverName(log.getTrip() != null && log.getTrip().getDriver() != null ? log.getTrip().getDriver().getName() : null) // ADDED THIS
                 .liters(log.getLiters())
                 .costPerLiter(log.getCostPerLiter())
                 .totalCost(log.getTotalCost())

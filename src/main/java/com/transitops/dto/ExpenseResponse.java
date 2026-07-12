@@ -18,4 +18,5 @@ public class ExpenseResponse {
     private String type;
     private BigDecimal amount;
     private LocalDate date;
+    private String driverName;
 }

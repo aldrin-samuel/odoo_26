@@ -66,9 +66,10 @@ public class ExpenseService {
         return ExpenseResponse.builder()
                 .id(expense.getId())
                 .vehicleId(expense.getVehicle() != null ? expense.getVehicle().getId() : null)
-                .vehicleName(expense.getVehicle() != null ? expense.getVehicle().getVehicleName() : null)  // CORRECT METHOD
+                .vehicleName(expense.getVehicle() != null ? expense.getVehicle().getVehicleName() : null)
                 .tripId(expense.getTrip() != null ? expense.getTrip().getId() : null)
                 .tripNumber(expense.getTrip() != null ? expense.getTrip().getTripNumber() : null)
+                .driverName(expense.getTrip() != null && expense.getTrip().getDriver() != null ? expense.getTrip().getDriver().getName() : null) // ADDED THIS
                 .description(expense.getDescription())
                 .type(expense.getType().name())
                 .amount(expense.getAmount())

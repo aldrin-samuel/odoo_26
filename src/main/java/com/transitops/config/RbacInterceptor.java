@@ -35,7 +35,8 @@ public class RbacInterceptor implements HandlerInterceptor {
             }
         }
         else if (role.equals("SAFETY_OFFICER")) {
-            if (uri.startsWith("/api/drivers") || uri.startsWith("/api/dashboard") || (uri.startsWith("/api/trips") && request.getMethod().equals("GET"))) {
+            if (uri.startsWith("/api/drivers") || uri.startsWith("/api/dashboard") || (uri.startsWith("/api/trips") && request.getMethod().equals("GET")) ||
+                    (uri.startsWith("/api/vehicles") && request.getMethod().equals("GET"))) {
                 return true;
             }
         }
