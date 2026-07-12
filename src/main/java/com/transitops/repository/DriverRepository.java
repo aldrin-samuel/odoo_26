@@ -19,6 +19,6 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     List<Driver> findByStatus(DriverStatus status);
 
     // Business Rule: Drivers with expired licenses cannot be assigned
-    @Query("SELECT d FROM Driver d WHERE d.licenseExpiryDate > :currentDate AND d.status = 'AVAILABLE'")
+    @Query("SELECT d FROM Driver d WHERE d.licenseExpiry > :currentDate AND d.status = 'AVAILABLE'")
     List<Driver> findAvailableDriversWithValidLicense(LocalDate currentDate);
 }

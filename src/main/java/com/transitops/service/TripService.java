@@ -12,8 +12,11 @@ import com.transitops.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -23,9 +26,7 @@ public class TripService {
     private final VehicleRepository vehicleRepository;
     private final DriverRepository driverRepository;
 
-    public TripService(TripRepository tripRepository,
-                       VehicleRepository vehicleRepository,
-                       DriverRepository driverRepository) {
+    public TripService(TripRepository tripRepository, VehicleRepository vehicleRepository, DriverRepository driverRepository) {
         this.tripRepository = tripRepository;
         this.vehicleRepository = vehicleRepository;
         this.driverRepository = driverRepository;
@@ -37,52 +38,45 @@ public class TripService {
 
     @Transactional
     public Trip createTrip(Trip trip) {
-
         Vehicle vehicle = vehicleRepository.findById(trip.getVehicle().getId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
-
         Driver driver = driverRepository.findById(trip.getDriver().getId())
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
 
-        // Business Rule: Retired or In Shop vehicles must never appear in dispatch
         if (vehicle.getStatus() != VehicleStatus.AVAILABLE) {
             throw new RuntimeException("Vehicle is not available (Status: " + vehicle.getStatus() + ")");
         }
-
-        // Business Rule: Suspended drivers or drivers already On Trip cannot be assigned
         if (driver.getStatus() != DriverStatus.AVAILABLE) {
             throw new RuntimeException("Driver is not available (Status: " + driver.getStatus() + ")");
         }
-
-        // Business Rule: Drivers with expired licenses cannot be assigned to trips
-        if (driver.getLicenseExpiryDate() != null && driver.getLicenseExpiryDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Cannot assign driver: License expired on " + driver.getLicenseExpiryDate());
+        if (driver.getLicenseExpiry().isBefore(LocalDate.now())) {
+            throw new RuntimeException("Cannot assign driver: License expired on " + driver.getLicenseExpiry());
         }
 
-        // Business Rule: Cargo Weight must not exceed the vehicle's maximum load capacity
+        // SAFETY CHECK: Prevent crash if frontend sends null
+        if (trip.getCargoWeight() == null) {
+            throw new RuntimeException("Cargo weight is required!");
+        }
         if (trip.getCargoWeight().doubleValue() > vehicle.getMaxLoadCapacity()) {
             throw new RuntimeException("Cargo weight (" + trip.getCargoWeight() + " kg) exceeds vehicle max capacity (" + vehicle.getMaxLoadCapacity() + " kg)");
         }
 
-        // Generate unique trip number if not provided
         if (trip.getTripNumber() == null || trip.getTripNumber().isEmpty()) {
             trip.setTripNumber("TRP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         }
 
-        // Dispatch
         vehicle.setStatus(VehicleStatus.ON_TRIP);
         driver.setStatus(DriverStatus.ON_TRIP);
-
         vehicleRepository.save(vehicle);
         driverRepository.save(driver);
 
         trip.setStatus(TripStatus.DISPATCHED);
-
         return tripRepository.save(trip);
     }
 
+    // UPDATED METHOD to accept JSON body from frontend
     @Transactional
-    public void completeTrip(Long id) {
+    public void completeTrip(Long id, Map<String, Object> body) {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
 
@@ -90,19 +84,27 @@ public class TripService {
             throw new RuntimeException("Only dispatched trips can be completed");
         }
 
+        // Safely extract values from the JSON map
+        if (body.containsKey("actualDistance")) {
+            trip.setActualDistance(new BigDecimal(body.get("actualDistance").toString()));
+        }
+        if (body.containsKey("fuelConsumed")) {
+            trip.setFuelConsumed(new BigDecimal(body.get("fuelConsumed").toString()));
+        }
+        if (body.containsKey("endOdometer")) {
+            trip.setEndOdometer(new BigDecimal(body.get("endOdometer").toString()));
+        }
+
         Vehicle vehicle = trip.getVehicle();
         Driver driver = trip.getDriver();
 
-        // Business Rule: Completing a trip automatically changes both to Available
         vehicle.setStatus(VehicleStatus.AVAILABLE);
         driver.setStatus(DriverStatus.AVAILABLE);
-
         vehicleRepository.save(vehicle);
         driverRepository.save(driver);
 
         trip.setStatus(TripStatus.COMPLETED);
-        trip.setCompletionTime(java.time.LocalDateTime.now());
-
+        trip.setCompletionTime(LocalDateTime.now());
         tripRepository.save(trip);
     }
 
@@ -111,27 +113,22 @@ public class TripService {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
 
-        // Business Rule: Only Draft or Dispatched trips can be cancelled
         if (trip.getStatus() != TripStatus.DRAFT && trip.getStatus() != TripStatus.DISPATCHED) {
-            throw new RuntimeException("Cannot cancel a trip that is already completed or cancelled");
+            throw new RuntimeException("Cannot cancel this trip");
         }
 
-        Vehicle vehicle = trip.getVehicle();
-        Driver driver = trip.getDriver();
-
-        // Business Rule: Cancelling a dispatched trip restores the vehicle and driver to Available
         if (trip.getStatus() == TripStatus.DISPATCHED) {
-            if (vehicle != null && vehicle.getStatus() == VehicleStatus.ON_TRIP) {
+            Vehicle vehicle = trip.getVehicle();
+            Driver driver = trip.getDriver();
+            if (vehicle.getStatus() == VehicleStatus.ON_TRIP) {
                 vehicle.setStatus(VehicleStatus.AVAILABLE);
                 vehicleRepository.save(vehicle);
             }
-
-            if (driver != null && driver.getStatus() == DriverStatus.ON_TRIP) {
+            if (driver.getStatus() == DriverStatus.ON_TRIP) {
                 driver.setStatus(DriverStatus.AVAILABLE);
                 driverRepository.save(driver);
             }
         }
-
         trip.setStatus(TripStatus.CANCELLED);
         tripRepository.save(trip);
     }

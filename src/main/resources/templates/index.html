@@ -2,214 +2,167 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-
     <meta charset="UTF-8">
     <title>TransitOps</title>
-
     <link rel="stylesheet" th:href="@{/style.css}">
-
 </head>
 
 <body>
 
 <div class="container">
 
-    <h1>🚚 TransitOps Fleet Management</h1>
-
-    <!-- ================= Dashboard ================= -->
-
-    <div class="card">
-
-        <h2>Dashboard</h2>
-
-        <div class="stats">
-
-            <div>
-                <h3>Vehicles</h3>
-                <h2 id="vehicleCount">0</h2>
-            </div>
-
-            <div>
-                <h3>Drivers</h3>
-                <h2 id="driverCount">0</h2>
-            </div>
-
-            <div>
-                <h3>Trips</h3>
-                <h2 id="tripCount">0</h2>
-            </div>
-
+    <!-- ================= Top Bar with RBAC Info ================= -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px;">
+        <h1 style="margin:0; border:none; padding:0; font-size: 2.2rem;">🚚 TransitOps Fleet Management</h1>
+        <div style="display: flex; align-items: center;">
+            <span id="welcomeUser" style="margin-right: 20px; font-weight: bold; color: #4a5568;"></span>
+            <a href="/logout" style="background: #ef4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Logout</a>
         </div>
+    </div>
 
+    <!-- ================= Dashboard (Visible to Everyone) ================= -->
+    <div class="card">
+        <h2>Dashboard</h2>
+        <div class="stats">
+            <div><h3>Available Vehicles</h3><h2 id="availableVehicles">0</h2></div>
+            <div><h3>Active Trips</h3><h2 id="activeTrips">0</h2></div>
+            <div><h3>Vehicles In Shop</h3><h2 id="vehiclesInShop">0</h2></div>
+            <div><h3>Fleet Utilization</h3><h2 id="fleetUtilization">0%</h2></div>
+        </div>
     </div>
 
     <!-- ================= Forms ================= -->
-
     <div class="forms">
 
-        <!-- Vehicle -->
-
-        <div class="card">
-
+        <!-- Vehicle: FLEET ONLY -->
+        <div class="card rbac-fleet">
             <h2>Add Vehicle</h2>
-
             <input id="regNo" placeholder="Registration Number">
-
             <input id="vehicleName" placeholder="Vehicle Name">
-
             <input id="vehicleType" placeholder="Vehicle Type">
-
-            <input id="capacity" type="number" placeholder="Capacity">
-
-            <button onclick="addVehicle()">
-                Save Vehicle
-            </button>
-
+            <input id="capacity" type="number" placeholder="Max Load Capacity (kg)">
+            <input id="acquisitionCost" type="number" placeholder="Acquisition Cost">
+            <button onclick="addVehicle()">Save Vehicle</button>
         </div>
 
-        <!-- Driver -->
-
-        <div class="card">
-
+        <!-- Driver: SAFETY OFFICER ONLY -->
+        <div class="card rbac-safety">
             <h2>Add Driver</h2>
-
             <input id="driverName" placeholder="Driver Name">
-
             <input id="licenseNumber" placeholder="License Number">
-
             <input id="licenseCategory" placeholder="License Category">
-
             <input id="licenseExpiry" type="date">
-
             <input id="contactNumber" placeholder="Contact Number">
+            <button onclick="addDriver()">Save Driver</button>
+        </div>
 
-            <button onclick="addDriver()">
-                Save Driver
-            </button>
+        <!-- Dispatch Trip: DRIVER ONLY -->
+        <div class="card rbac-driver">
+            <h2>Dispatch Trip</h2>
+            <select id="tripVehicle"></select>
+            <select id="tripDriver"></select>
+            <input id="tripSource" placeholder="Source">
+            <input id="tripDestination" placeholder="Destination">
+            <input id="tripCargo" type="number" placeholder="Cargo Weight (kg)">
+            <input id="tripDistance" type="number" placeholder="Planned Distance (km)">
+            <button onclick="createTrip()">Dispatch Trip</button>
+        </div>
 
+        <!-- Complete Trip: DRIVER ONLY -->
+        <div class="card rbac-driver" id="completeTripCard" style="display:none; border: 2px solid #10b981;">
+            <h2>Complete Trip #<span id="ctTripId"></span></h2>
+            <input id="ctActualDistance" type="number" placeholder="Actual Distance (km)">
+            <input id="ctFuelConsumed" type="number" step="0.1" placeholder="Fuel Consumed (Liters)">
+            <input id="ctEndOdometer" type="number" placeholder="End Odometer">
+            <button onclick="submitCompleteTrip()" style="background:#10b981;">Submit Completion</button>
+            <button onclick="cancelCompleteForm()" style="background:#64748b;">Cancel</button>
+        </div>
+
+        <!-- Maintenance: FLEET ONLY -->
+        <div class="card rbac-fleet">
+            <h2>Add Maintenance Log</h2>
+            <select id="maintVehicle"></select>
+            <input id="maintType" placeholder="Type (e.g., Oil Change)">
+            <input id="maintDesc" placeholder="Description">
+            <input id="maintCost" type="number" placeholder="Cost">
+            <button onclick="addMaintenance()">Save Log</button>
+        </div>
+
+        <!-- Fuel: FINANCE ONLY -->
+        <div class="card rbac-finance">
+            <h2>Add Fuel Log</h2>
+            <select id="fuelVehicle"></select>
+            <input id="fuelLiters" type="number" step="0.1" placeholder="Liters">
+            <input id="fuelCostPerLiter" type="number" step="0.1" placeholder="Cost per Liter">
+            <input id="fuelDate" type="date">
+            <input id="fuelOdometer" type="number" placeholder="Odometer Reading">
+            <button onclick="addFuelLog()">Save Fuel Log</button>
+        </div>
+
+        <!-- Expense: FINANCE ONLY -->
+        <div class="card rbac-finance">
+            <h2>Add Expense</h2>
+            <select id="expVehicle"><option value="">-- None --</option></select>
+            <input id="expType" placeholder="Type (TOLL, FINE, etc)">
+            <input id="expDesc" placeholder="Description">
+            <input id="expAmount" type="number" placeholder="Amount">
+            <input id="expDate" type="date">
+            <button onclick="addExpense()">Save Expense</button>
         </div>
 
     </div>
 
-    <!-- ================= Vehicle Table ================= -->
+    <!-- ================= Tables ================= -->
 
-    <div class="card">
-
+    <!-- Vehicles Table: Fleet (Manage), Finance (Read), Safety (Read), Driver (Read for dropdowns) -->
+    <div class="card rbac-fleet rbac-readonly-finance rbac-readonly-safety rbac-readonly-driver">
         <h2>Vehicles</h2>
-
-        <table>
-
-            <thead>
-
-            <tr>
-
-                <th>ID</th>
-                <th>Registration</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Action</th>
-
-            </tr>
-
-            </thead>
-
-            <tbody id="vehicleTable">
-
-            </tbody>
-
-        </table>
-
+        <table><thead><tr><th>ID</th><th>Registration</th><th>Name</th><th>Type</th><th>Capacity</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="vehicleTable"></tbody></table>
     </div>
 
-    <!-- ================= Driver Table ================= -->
-
-    <div class="card">
-
+    <!-- Drivers Table: Safety (Manage), Fleet (Manage), Driver (Read for dropdowns) -->
+    <div class="card rbac-safety rbac-fleet rbac-driver">
         <h2>Drivers</h2>
-
-        <table>
-
-            <thead>
-
-            <tr>
-
-                <th>ID</th>
-                <th>Name</th>
-                <th>License</th>
-                <th>Status</th>
-                <th>Action</th>
-
-            </tr>
-
-            </thead>
-
-            <tbody id="driverTable">
-
-            </tbody>
-
-        </table>
-
+        <table><thead><tr><th>ID</th><th>Name</th><th>License</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="driverTable"></tbody></table>
     </div>
 
-    <!-- ================= Dispatch Trip ================= -->
-
-    <div class="card">
-
-        <h2>Dispatch Trip</h2>
-
-        <select id="tripVehicle"></select>
-
-        <select id="tripDriver"></select>
-
-        <input id="tripSource" placeholder="Source">
-
-        <input id="tripDestination" placeholder="Destination">
-
-        <input id="tripCargo" placeholder="Cargo">
-
-        <input id="tripDistance" type="number" placeholder="Distance">
-
-        <input id="tripRevenue" type="number" placeholder="Revenue">
-
-        <button onclick="createTrip()">
-
-            Dispatch Trip
-
-        </button>
-
-    </div>
-
-    <!-- ================= Trip Table ================= -->
-
-    <div class="card">
-
+    <!-- Trips Table: Driver (Manage), Fleet (Read), Safety (Read-only) -->
+    <div class="card rbac-driver rbac-fleet rbac-safety">
         <h2>Trips</h2>
+        <table><thead><tr><th>ID</th><th>Vehicle</th><th>Driver</th><th>Route</th><th>Cargo</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="tripTable"></tbody></table>
+    </div>
 
-        <table>
+    <!-- Maintenance Table: FLEET ONLY -->
+    <div class="card rbac-fleet">
+        <h2>Maintenance Logs</h2>
+        <table><thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Desc</th><th>Cost</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="maintTable"></tbody></table>
+    </div>
 
-            <thead>
+    <!-- Fuel Table: FINANCE ONLY -->
+    <div class="card rbac-finance">
+        <h2>Fuel Logs</h2>
+        <table><thead><tr><th>ID</th><th>Vehicle</th><th>Liters</th><th>Total Cost</th><th>Date</th></tr></thead>
+            <tbody id="fuelTable"></tbody></table>
+    </div>
 
-            <tr>
+    <!-- Expenses Table: FINANCE ONLY -->
+    <div class="card rbac-finance">
+        <h2>Expenses</h2>
+        <table><thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Description</th><th>Amount</th></tr></thead>
+            <tbody id="expTable"></tbody></table>
+    </div>
 
-                <th>ID</th>
-                <th>Vehicle</th>
-                <th>Driver</th>
-                <th>Route</th>
-                <th>Status</th>
-                <th>Revenue</th>
-                <th>Action</th>
-
-            </tr>
-
-            </thead>
-
-            <tbody id="tripTable">
-
-            </tbody>
-
-        </table>
-
+    <!-- ================= Analytics ================= -->
+    <!-- Analytics Table: Finance (Manage), Fleet (View operational efficiency) -->
+    <div class="card rbac-finance rbac-fleet">
+        <h2>Fleet Analytics & Reports</h2>
+        <button onclick="exportCsv()" style="margin-bottom: 15px; background: #2563eb; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">⬇ Export CSV</button>
+        <table><thead><tr><th>Vehicle</th><th>Total Fuel Cost</th><th>Total Maint Cost</th><th>Op. Cost</th><th>Fuel Eff. (km/L)</th><th>ROI (%)</th></tr></thead>
+            <tbody id="analyticsTable"></tbody></table>
     </div>
 
 </div>
@@ -217,5 +170,4 @@
 <script th:src="@{/script.js}"></script>
 
 </body>
-
 </html>

@@ -1,6 +1,6 @@
-// entity/Trip.java
 package com.transitops.entity;
 
+import com.transitops.entity.enums.TripStatus; // ADD THIS IMPORT
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -55,7 +55,5 @@ public class Trip extends BaseEntity {
 
     private String notes;
 
-    public enum TripStatus {
-        DRAFT, DISPATCHED, COMPLETED, CANCELLED
-    }
+    // DELETE THE INNER ENUM THAT WAS HERE
 }

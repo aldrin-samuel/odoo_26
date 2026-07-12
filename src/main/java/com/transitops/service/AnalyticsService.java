@@ -1,8 +1,8 @@
-// service/AnalyticsService.java
 package com.transitops.service;
 
 import com.transitops.entity.Vehicle;
-import com.transitops.entity.enums.VehicleStatus;  // CORRECT IMPORT
+import com.transitops.entity.enums.TripStatus; // CORRECT IMPORT
+import com.transitops.entity.enums.VehicleStatus;
 import com.transitops.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,12 +30,9 @@ public class AnalyticsService {
         BigDecimal totalOtherExpenses = expenseRepository.getTotalExpensesByVehicle(vehicleId);
         BigDecimal totalOperationalCost = totalFuelCost.add(totalMaintenanceCost).add(totalOtherExpenses);
 
-        // Fuel Efficiency = Total Distance / Total Fuel
         BigDecimal fuelEfficiency = calculateFuelEfficiency(vehicleId);
 
-        // Vehicle ROI = (Revenue - (Maintenance + Fuel)) / Acquisition Cost
         BigDecimal revenue = calculateRevenue(vehicleId);
-        // Handle null acquisitionCost - use 1.0 as default to avoid division by zero
         Double acquisitionCostDouble = vehicle.getAcquisitionCost() != null ? vehicle.getAcquisitionCost() : 1.0;
         BigDecimal acquisitionCost = BigDecimal.valueOf(acquisitionCostDouble);
 
@@ -45,7 +42,7 @@ public class AnalyticsService {
 
         Map<String, Object> analytics = new HashMap<>();
         analytics.put("vehicleId", vehicleId);
-        analytics.put("vehicleName", vehicle.getVehicleName());  // CORRECT METHOD
+        analytics.put("vehicleName", vehicle.getVehicleName());
         analytics.put("registrationNumber", vehicle.getRegistrationNumber());
         analytics.put("totalFuelCost", totalFuelCost);
         analytics.put("totalMaintenanceCost", totalMaintenanceCost);
@@ -72,7 +69,7 @@ public class AnalyticsService {
 
         BigDecimal totalDistance = tripRepository.findAll().stream()
                 .filter(t -> t.getVehicle() != null && t.getVehicle().getId().equals(vehicleId))
-                .filter(t -> t.getStatus() == com.transitops.entity.Trip.TripStatus.COMPLETED)
+                .filter(t -> t.getStatus() == TripStatus.COMPLETED) // FIXED: Removed com.transitops.entity.Trip.
                 .map(t -> t.getActualDistance() != null ? t.getActualDistance() : t.getPlannedDistance())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -80,11 +77,10 @@ public class AnalyticsService {
     }
 
     private BigDecimal calculateRevenue(Long vehicleId) {
-        // Simplified: Assume ₹10 per km as revenue
         BigDecimal ratePerKm = new BigDecimal("10");
         BigDecimal totalDistance = tripRepository.findAll().stream()
                 .filter(t -> t.getVehicle() != null && t.getVehicle().getId().equals(vehicleId))
-                .filter(t -> t.getStatus() == com.transitops.entity.Trip.TripStatus.COMPLETED)
+                .filter(t -> t.getStatus() == TripStatus.COMPLETED) // FIXED: Removed com.transitops.entity.Trip.
                 .map(t -> t.getActualDistance() != null ? t.getActualDistance() : t.getPlannedDistance())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 

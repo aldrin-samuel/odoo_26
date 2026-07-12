@@ -75,4 +75,9 @@ public class ExpenseService {
                 .date(expense.getDate())
                 .build();
     }
+
+    // Add this method to ExpenseService.java
+    public List<Expense> getAllExpensesRaw() {
+        return expenseRepository.findAll();
+    }
 }
